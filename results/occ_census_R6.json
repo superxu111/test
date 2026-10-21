@@ -1,0 +1,49 @@
+{
+ "artifact_id": "E33-occ-census-R6-persist",
+ "date": "2026-10-16（R6 记录层清障落盘）",
+ "purpose": "把 R5-14「F 度量退化披露（占用层普查）」的证据从 /tmp（易失）落盘到 results/（B席 m17/A席 m8 要求）；原分析/判据/日志字节不动。",
+ "provenance": {
+  "original_script": "/tmp/occ_census.py（R5 会话实算；本件自 /tmp 复制为 occ_census_R6.py 并自 /tmp 环境原样复跑）",
+  "rerun_command": "/root/miniconda3/envs/euler/bin/python results/r3/e33_a4prime_adaptive/occ_census_R6.py",
+  "rerun_stdout_matches_R5_disclosure": "learn/gate_0.0-0.05 均值=1.0、gate_0.2→3.79、cas→2.0 与映射库 R5-14 所列一致（gate_0.5→2.79 为 R5-14 未列的同批值）"
+ },
+ "census_output": {
+  "learn": {
+   "mean_occupied_strata": 1.0,
+   "mode": 1
+  },
+  "gate_0.0": {
+   "mean_occupied_strata": 1.0,
+   "mode": 1
+  },
+  "gate_0.01": {
+   "mean_occupied_strata": 1.0,
+   "mode": 1
+  },
+  "gate_0.02": {
+   "mean_occupied_strata": 1.0,
+   "mode": 1
+  },
+  "gate_0.05": {
+   "mean_occupied_strata": 1.0,
+   "mode": 1
+  },
+  "gate_0.1": {
+   "mean_occupied_strata": 1.33,
+   "mode": 1
+  },
+  "gate_0.2": {
+   "mean_occupied_strata": 3.79,
+   "mode": 4
+  },
+  "gate_0.5": {
+   "mean_occupied_strata": 2.79,
+   "mode": 3
+  },
+  "cas": {
+   "mean_occupied_strata": 2.0,
+   "mode": 2
+  }
+ },
+ "note": "occupied strata=攻击正例命中所在的分位层数（K=5，日内 ranknorm 层）；均值口径=对 (seed×draw×day) 格取平均。"
+}

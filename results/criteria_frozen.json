@@ -1,0 +1,40 @@
+{
+ "experiment": "E32",
+ "title": "CAS 条件分层评分（Conditional-Adjusted Stratified scoring）+ 三口径度量（池化/标准化/最坏层下界）+ oracle 符号最强平凡基线",
+ "frozen_at": "以本文件 mtime 为准（mtime-authoritative；本文件自写入后不得再修改；跑数脚本打印本文件 mtime 与产物 mtime 的先后关系）",
+ "status": "冻结于任何 E32 产物之前（实现层 SMOKE 仅用 seed0×draw0 的 2 个策略验证管线与「池化 AUC 逐位复现 E25」；判据本身未被 SMOKE 结果修改）",
+ "trigger": "双审 A-M1/B-M6/M7/M8/A-M2：E25 方法主张域错位（极端避枢纽域 vs 标定域）、缺 gate-vs-degfall 对照、最强平凡基线口径不公；定向创新方案一（CAS-score，research_archive/R3_定向创新_主张域迁移与混合权重博弈_条件分层评分与保证下界.md §4）",
+ "definitions_frozen": {
+  "strata": "逐日按无符号可见端度（deg，来自 scores_e25_seed*.npz 的 cand/cross 度）等频分 K=5 层（层 0=最低度）；层权重不自由估计（B4/DCSBM 归一化约定）",
+  "reference_weights": "标准化 AUC = 顶层均匀参考权重（1/K）的层内 AUC 平均；池化 AUC = 现状口径（按实际层构成加权，含跨层项）",
+  "F": "F(score) = min over 5 个层内日块池化 AUC（最坏层下界；与具体攻击者优化无关）",
+  "CAS": "CAS = 0.5·z_learn + 0.5·z_deg；z_learn = 层内 r_learn 秩（逐日逐层 ranknorm）；z_deg = 层内 (σ·log1p(deg)) 秩，σ = 该 (strategy,draw,conv) 验证日选出的度方向（与 E25 pool/degfall 同信息集）；组合权重固定 0.5/0.5、无跨层项（放置不敏感设计）；池化读数直接用 CAS 原始分（无跨层偏移）",
+  "metric_scope": "asimpl 主口径 / strict 副口径；日块加权池化；bootstrap 按日重采样 1000 次",
+  "calibration_window": "α ∈ {+0.75, +1.0, +1.5}（E25 C6 标定窗口：medpct 0.3214-0.4933 含真实 0.4854）",
+  "extreme_domain": "α ≤ 0（A0_uniform/ S_am0.5 / A1_avoid_b1 / A2_avoid_b2 及 BR 臂）"
+ },
+ "success_criteria_frozen": {
+  "P-CAS1_primary": "标定窗口 α∈{0.75,1.0,1.5}：CAS 的【标准化 AUC】− oracle 符号最强平凡基线（基线集={degfall(±σ), learn(±), pool(±)} 在该度量下的最大值）> 0，日块配对 bootstrap 95% CI 下界 > 0 且点估计 ≥ min_gap = 0.0106（E12 MDE，precedent: E14 min_gap=max(0.05,MDE)），3/3 seed",
+  "P-CAS1b_secondary": "同判据但用【池化 AUC】度量（双报；不作主判据）",
+  "P-CAS2": "标定窗口内 F(CAS) ≥ F(gate) ≥ F(pool)（3/3 seed，draw 均值）——原样继承定向创新方案一 P-CAS2；同时全表报告 F(learn)/F(degfall)/F(gate)/F(pool)/F(CAS)（若序关系不过，读表不作解释性改判）",
+  "P-CAS3_original_prediction": "原样继承方案一的可证伪预测：α*=+1.5 处 CAS 标准化 AUC ≥ 0.65（依据 = E25 lowdeg_learn_auc=0.6766>gate 0.6019>池化 0.4933 的 N4 推算，推算已注明为「非实测」）",
+  "P-CAS3b_bucket_dissection": "报告型（新增，为 P-CAS3 失败时定位）：把 lowdeg 桶（度中位切分，E25 实现 r3_e25_attack_bed.py:307-311）AUC 分解为层内项与跨层项（按 5 层分位重构桶=层 0∪1 的组成），量化「桶内可分」中有多少来自跨分位项",
+  "P-CAS4_extreme_domain": "极端域报告型：如实报 CAS/gate/degfall 的 F 与标准化 AUC，不主张；预期=gate≈degfall（w 钉在网格上界 0.5）而 CAS 因固定 0.5 权重稀释强度信号可能更低（如实报，不作为失败）",
+  "M1_manipulability": "报告型核心证据（度量不可辩护的量化）：固定评分器 learn 的池化 AUC 在 α 家族 9 点上从 ~0.49 降到 ~0.006（同一模型、仅攻击者放置变化）；且 gate−degfall 在 α*=+1.5 的符号在池化度量下为正、在标准化/F 度量下为负（同一 15 格样本，日块配对 bootstrap CI 双报）"
+ },
+ "failure_branches_frozen": {
+  "P-CAS1_fail": "按方案一预注册降级：CAS 不作方法主张，降为「条件量诊断 + 标准化度量协议」（与方案二合流）；不得跑后改读法/改层数/改权重（B席 M9 病理预防）",
+  "P-CAS2_fail": "如实记录序关系不成立的具体位，方法主张改以 M1 + 方案二（PPD 协议）承担",
+  "P-CAS3_fail": "如实记录「原预测被证伪」，并输出 P-CAS3b 的桶分解作为替代解释；写作期不得引用 lowdeg=0.6766 作为「条件信号存活」的证据，除非带 P-CAS3b 分解披露"
+ },
+ "provenance_note": "P-CAS1/P-CAS2/P-CAS3 逐字继承方案一（定向创新调研人）；P-CAS1b/P-CAS3b/P-CAS4/M1 由本执行人补齐（为可证伪性/双报/失败定位）。min_gap 沿用 E12 MDE=0.0106（既有先例，非本执行人新造）。K=5 层为本执行人冻结值（方案一给「5-10 层」未定死），K=10 作注册敏感性分析（报告型）。",
+ "interpretation_limits": [
+  "F 与标准化 AUC 是「评分+层族」的属性，不是「某个攻击者的上界」——不主张不可博（不可博方向由 theory 的不可能性承担）",
+  "层族=可见端度分位（可操纵量）；层的外生性/可观测性假设见方案一 §4",
+  "CAS 的 0.5/0.5 组合权重由约定固定（不估计），因此不是最优混合；报告其与最优混合（oracle 基线）的差距",
+  "全部读数复用既有 E25 工件（零重训）；低度桶/分层 AUC 的正例数边界（n_pos=550/格）沿用 E25 声明"
+ ],
+ "artifacts": [
+  "results/r3/e32_cas_stratified/{criteria_frozen.json, analysis_e32.json, stratified_table.jsonl, DONE.sentinel}"
+ ]
+}

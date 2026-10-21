@@ -1,0 +1,11 @@
+{
+ "artifact": "E35 status addendum",
+ "status": "exploratory, no preregistered criteria",
+ "note": "Added in response to review-panel finding 7a. Analysis-only: reads results/r2/lanl_blindness/scores_e11_*.npz (read-only), no training. Because no criteria were frozen before execution, this experiment cannot support confirmatory claims; it is reported as exploratory evidence and must be labeled as such in the manuscript.",
+ "unit": "per-day cross edges; placement = counterfactual reweighting of observed red-team positives, not re-planting",
+ "known_limits": [
+  "most day-stratum cells are unoccupied (mean occupied strata 1.38 of 5) because LANL red-team positives are sparse (17-30/day)",
+  "std/F computed over occupied strata only; with 1 occupied stratum std=F=that stratum's AUC",
+  "asimpl visibility only"
+ ]
+}
