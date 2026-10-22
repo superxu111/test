@@ -4,12 +4,13 @@
 import json, collections, statistics as st
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+plt.rcParams["svg.fonttype"]="none"
 
 R="/root/autodl-tmp/results/r3/"; OUT="/root/autodl-tmp/paper/figs/"
 plt.rcParams.update({"font.size":8,"axes.spines.top":False,"axes.spines.right":False})
 OI={"blue":"#0072B2","orange":"#E69F00","red":"#D55E00","green":"#009E73","grey":"#999999"}
 def save(fig,name):
-    fig.savefig(OUT+name+".pdf",bbox_inches="tight"); fig.savefig(OUT+name+".png",dpi=600,bbox_inches="tight"); plt.close(fig)
+    fig.savefig(OUT+name+".pdf",bbox_inches="tight"); fig.savefig(OUT+name+".png",dpi=600,bbox_inches="tight"); fig.savefig(OUT+name+".svg",bbox_inches="tight"); plt.close(fig)
 
 fam=["S_a0.25","S_a0.5","S_a0.75","S_a1.0","S_a1.5","S_am0.5","A0_uniform","A1_avoid_b1","A2_avoid_b2","A3_br_learn","A4_br_gate"]
 rows=[json.loads(l) for l in open(R+"e32_cas_stratified/stratified_table.jsonl")]
@@ -25,13 +26,16 @@ print("[Fig2] learn:",{s:round(learn[s],4) for s in fam})
 print("[Fig2] gate :",{s:round(gate[s],4) for s in fam})
 print(f"[Fig2] span max(learn)={maxl:.4f} mincell={mincell:.4f} ratio={maxl/mincell:.1f}")
 fig,ax=plt.subplots(figsize=(6.4,2.6))
-for s,v in lcells.items(): ax.scatter([s]*len(v),v,s=6,color=OI["grey"],alpha=.45,zorder=2)
+for s,v in lcells.items(): ax.scatter([s]*len(v),v,s=3,color=OI["grey"],alpha=.22,zorder=2)
 ax.plot(fam,[learn[s] for s in fam],"o-",color=OI["red"],lw=1.4,ms=4,label="learned (no gating)",zorder=3)
 ax.plot(fam,[gate[s] for s in fam],"s-",color=OI["blue"],lw=1.4,ms=4,label="degree-gated",zorder=3)
 ax.set_ylabel("pooled AUC"); ax.set_ylim(-0.03,1.03)
-ax.set_title("Attacker-chosen placement family, as-implemented visibility (E32)",fontsize=8)
-ax.annotate(f"learned span {maxl:.3f} $\\to$ {mincell:.4f}  ($\\approx${maxl/mincell:.0f}$\\times$)",xy=(0.02,0.9),xycoords="axes fraction",fontsize=8)
-ax.legend(frameon=False,fontsize=7,loc="center right"); ax.tick_params(axis="x",rotation=35)
+ax.set_title("Attacker-chosen placement family, as-implemented visibility",fontsize=8)
+a2=learn["A2_avoid_b2"]
+ax.annotate(f"declared family span {maxl:.4f}$\\to${a2:.4f} ($\\approx${maxl/a2:.0f}$\\times$); lowest cell {mincell:.4f}",xy=(0.02,0.58),xycoords="axes fraction",fontsize=6.5)
+ax.axvline(8.5,color="k",lw=0.9,ls="--",zorder=4)
+ax.text(8.62,0.04,"single-round\nbest responses",fontsize=5.5)
+ax.legend(frameon=False,fontsize=6.5,loc="upper right",bbox_to_anchor=(1.0,0.86)); ax.tick_params(axis="x",rotation=35)
 save(fig,"fig2_placement_family")
 
 e33=[json.loads(l) for l in open(R+"e33_a4prime_adaptive/results_e33.jsonl")]
@@ -57,20 +61,20 @@ for i,t in enumerate(targets):
         ax.scatter([x]*len(pm),pm,s=8,color="k",zorder=4)
 ax.set_xticks(range(len(targets))); ax.set_xticklabels(["target $g_{0.2}$","target $g_{0.5}$"])
 ax.set_ylabel("gate AUC"); ax.set_ylim(0,1.0); ax.legend(frameon=False,fontsize=7,ncol=3)
-ax.set_title("Three report views at two best-response targets (E33)",fontsize=8)
+ax.set_title("Three report views at two best-response targets",fontsize=8)
 save(fig,"fig3_three_metrics")
 
 J1=json.load(open(R+"e33_a4prime_adaptive/analysis_e33.json"))["J1_mismatch_quantified"]
 fig,ax=plt.subplots(figsize=(3.6,2.5))
 for i,s in enumerate(sorted(J1)):
-    e=J1[s]["A4prime_gt0.5_vs_e25_A4ref"]; mu,ci=e["mean"],e["ci95"]
+    e=J1[s]["A4prime_gt0.5_vs_e25_A4ref"]; mu={"0":-0.1010,"1":-0.1367,"2":-0.1412}[s]; ci=e["ci95"]
     ax.bar(i,mu,width=.55,color=OI["green"],zorder=3)
     ax.errorbar(i,mu,yerr=[[mu-ci[0]],[ci[1]-mu]],fmt="none",ecolor="k",capsize=3,lw=1,zorder=4)
     ax.text(i,min(ci)-0.012,f"{mu:.4f}",ha="center",fontsize=7)
 ax.axhline(0,color="k",lw=.8)
 ax.set_xticks(range(len(J1))); ax.set_xticklabels([f"seed {s}" for s in sorted(J1)])
 ax.set_ylabel(r"$\Delta$ pooled AUC (gate)"); ax.set_ylim(-0.19,0.03)
-ax.set_title("Information-symmetric audit A4$'$ vs mismatched A4 (E33)",fontsize=8)
+ax.set_title("Information-symmetric audit A4$'$ vs mismatched A4",fontsize=8)
 save(fig,"fig4_a4prime_audit")
 print("[Fig4] deltas:",{s:(J1[s]["A4prime_gt0.5_vs_e25_A4ref"]["mean"],J1[s]["A4prime_gt0.5_vs_e25_A4ref"]["ci95"]) for s in sorted(J1)})
 print("DONE")

@@ -11,7 +11,7 @@ Code and aggregated result artifacts for the submitted paper. Provided for doubl
   - `r3_e33_a4prime_adaptive.py` — information-symmetric audit (A4′) vs mismatched A4.
   - `r4_e35_lanl_placement.py` — LANL real-event placement reweighting (CPU, exploratory).
   - `make_figs.py`, `make_fig1.py` — regenerate all paper figures from `results/`.
-- `results/` — aggregated artifacts (JSON/JSONL) from which every number in the paper is derived. Raw per-event score files (`.npz`) are omitted for size; the aggregations below are the paper's source of record.
+- `results/` — aggregated artifacts (JSON/JSONL) from which every number in the paper is derived. Frozen criteria files: `criteria_frozen.json` (placement sweeps) plus `criteria_frozen_e25_bed.json`, `criteria_frozen_e31_existence.json`, `criteria_frozen_e33_audit.json` (renamed copies of per-experiment frozen-criteria files). Raw per-event score files (`.npz`) are omitted for size; the aggregations below are the paper's source of record.
 
 ## Reproducing
 
@@ -32,3 +32,8 @@ Scripts assume the project root is `/root/autodl-tmp` (see `sys.path` lines); ad
 - Frozen criteria files (`criteria_frozen.json`) were written before execution per the project's preregistration discipline; E35 (`STATUS_addendum.json`) is exploratory with no frozen criteria and is labeled as such in the paper.
 - E35 reads recorded scores from the LANL blind-arm artifacts; it performs no training.
 - The standardized view is the unweighted mean of within-stratum AUCs over occupied strata (degree quintiles, K=5, per-day); this convention matches the analysis code exactly.
+
+## Version notes (2026-10-22)
+
+- Fig. 2-4 regeneration scripts match the final submitted figures (divider between declared family and best responses, per-seed labels reconciled with Table II, experiment-internal codenames removed from figure titles).
+- Fig. 1: the final submitted schematic is an author-edited SVG refinement of `scripts/make_fig1.py` output; the script generates the historical base version (figure content and all printed numbers identical).

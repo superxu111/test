@@ -1,0 +1,40 @@
+{
+ "experiment": "E31",
+ "title": "E30 修正：边存在性检查实现修复 + 存在边植入对照臂（Δ≈0.32 残差归因的正确对照）",
+ "frozen_at": "以本文件 mtime 为准（mtime-authoritative；本文件自写入后不得再修改；跑数脚本打印本文件 mtime 与产物 mtime 的先后关系）",
+ "status": "冻结于任何 E31 产物之前；E30 原工件字节不动，本实验出具 supersede 指针",
+ "trigger": "双审 B-M10（E30 存在性检查实现错误：real_edges 取 day_pairs//N 的 lo 端点集，与植入键 min*N+max 永不相交）+ B席 m7/A席 M1（缺存在边对照臂，Δ≈0.32 为排除法归因）",
+ "bug_confirmation_by_this_executor": {
+  "read": "scripts/r3_e30_bed_exploratory.py:61（real_edges[d]=set((day_pairs[d]//N).tolist()) = lo 端点集）vs :88（keys=min*N+max）→ 交集仅剩 min=0 的巧合命中",
+  "measured": "本会话同构复跑 S_a1.5（5 draw × 11 eval day）：植入 2750 条中 lo 集命中 2 条（=E30 报出量级 0.0007）、修正后全键集命中 381 条（0.1385）→ 实现错误成立、E30 方向结论（「植入正例几乎全为新对」）不成立",
+  "verdict": "B-M10 意见成立 → 当场修实现并重算"
+ },
+ "independent_vars": {
+  "existence_check": "修正实现：planted key = min(u,v)*N+max(u,v) 与当日 day_pairs[d] 全键集（u*N+v, u<v）精确匹配（np.isin）",
+  "arms_recomputed": [
+   "11 策略（9 α 家族 + A0_uniform + A3/A4）× 3 seed × 5 draw：修正后存在率重算（asimpl 口径的植入序列，与 E25 逐位同构）",
+   "新臂 A5_exist_matched：植入 = 当日真实存在的跨界非红队边中，逐位匹配 S_a1.5 正例的可见端度分位档案（elementwise percentile matching：对 S_a1.5 每条正例的度分位 pct_i（参考=当日跨界非红队度分布），取真实边中 pct 最接近者）——唯一差别=边存在性，度剖面逐位对齐",
+   "新臂 A5_exist_uniform：同构但真实边按均匀抽样（不给度偏好，参照用）"
+  ],
+  "score_source": "scores_e25_seed*.npz 的 {d}_cross_a_{conv}/{d}_cross_deg（A5 正例与负例均出自跨边界集，分已在工件内，无需模型推理）",
+  "params_selection": "与 E25 逐位同构（select_params）：w∈W_GRID、σ∈{±1}、λ∈LAM_GRID 仅在验证日（1,2,5,6,7,8,9）按日 joint-rank 后 AP 选择；A5 臂在验证日用自己的植入正例"
+ },
+ "success_criteria_frozen": {
+  "F1_exists_rate_corrected": "报告型（修正实现）：逐策略×seed×draw 存在率均值；预测 Spearman(α, exists_frac) > 0（度偏好越贴枢纽，采样命中真实边率越高）",
+  "F2_control_arm_primary": "gate(A5_exist_matched) − gate(S_a1.5) ≥ 0.10（日块配对 bootstrap 95% CI 下界>0，3/3 seed；asimpl 主口径；阈值 0.10=本执行人自定，声明为 Δ≈0.32 的 1/3，同时双报点估计与 CI）——这是「Δ≈0.32 中边存在性通道」的对照检验：不过则存在性通道不承担残差归因",
+  "F3_decomposition": "报告型三元并列：gate(A5_exist_matched) / gate(S_a1.5) / 真实红队 0.9432（E17 L0_fixed0.05 三 seed 均值）；Δ 分解按同一 gate 实现与同一验证日协议",
+  "F4_stratified_existence": "报告型（探索）：S_a1.5 内按修正后的存在/新对标志分层 AUC（每层正例数小、CI 宽，仅作解释性证据）"
+ },
+ "failure_branches_frozen": {
+  "F2_fail": "如实记录「存在性对照臂未复现 0.94 量级」→ E30 的「Δ≈0.32 归因于边存在性」整段作废，改「残差来源未定（存在性通道不足以解释）」",
+  "F2_pass": "存在性通道成立 → 论文写法为「床的解释力边界 = 真实边存在性结构（受控对照量化）」，仍不主张真实攻击者身份"
+ },
+ "interpretation_limits": [
+  "A5 臂正例为真实跨界边（与负例同源，负例已剔除被采样正例），与 E17 真实红队设置同族但非红队事件——不主张攻击者身份",
+  "A5 的度分位匹配用「当日跨界非红队度分布」作参考（与 E25 的 pct_in 同参考）；匹配残差（最近邻分位差）随件报告",
+  "E30 原工件保留不改（字节不动），本实验加 supersede 指针"
+ ],
+ "artifacts": [
+  "results/r3/e31_existence_fix/{criteria_frozen.json, analysis_e31.json, results_e31.jsonl, DONE.sentinel}"
+ ]
+}

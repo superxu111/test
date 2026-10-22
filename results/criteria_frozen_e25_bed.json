@@ -1,0 +1,94 @@
+{
+ "experiment": "E25",
+ "title": "受控攻击者床：攻击者度偏好 α 家族 × 评分器剂量-响应（W5/Q22 + 博弈论 best-response 臂）",
+ "frozen_at": "2026-10-16 06:51:50 +0800（mtime 回写；原手写值作废）",
+ "amendment_prerun": {
+  "at": "2026-10-16 06:51:50 +0800（mtime 回写；原手写值作废）",
+  "reason": "SMOKE 全流程跑通（1 seed/1 draw/500 候选）暴露轴几何问题：均匀抽 V 节点的植入边度分位仅 0.04，而真实 LANL 红队边度分位实测 0.4854（本执行人从 E11 npz 复算：pooled 49 正例 median_pct=0.4854、日 median 均值 0.3755）——原 A0/A1/A2 三点全落在远极端避枢纽侧，无法覆盖真实签名位置，剂量-响应轴不可解释。",
+  "change": [
+   "攻击者家族扩为度偏好指数 α 家族：v 权重 ∝ (deg_vis+1)^α，α∈{+1.5,+1.0,+0.75,+0.5,+0.25,0,−0.5,−1.0,−2.0}（9 臂；原 A0_uniform=α0、A1_avoid_b1=α−1、A2_avoid_b2=α−2 保留原义）；白盒 BR 臂 A3_br_learn/A4_br_gate 不变",
+   "C1 由 3 点 Spearman(β) 改为 9 点 Spearman(α, 度分位中位)≤−0.9（阈值不变，点集扩）",
+   "新增 C6_alpha_calibration（报告型）：以 |AUC_learn(α)−0.5019|（E11 blind0 asimpl 跨层 learn 池化 AUC 实测）最小定 α*，报 α* 处床的 medpct 与真实 0.4854 的匹配度、及床 gate 臂 AUC 是否复现真实 0.9205 量级",
+   "新增 C7_blendin（报告型）：α=+1.0（贴边度分布=隐身攻击者）下 degfall AUC 应≈0.5（度信号消失）；gate 的验证日选择是否自动退化到 learn"
+  ],
+  "discipline": "改动全部发生在任何全量产物之前；SMOKE 产物仅作管线验证（1 seed/1 draw），已在 results/r3/e25_attack_bed/ 内单独留存，不作为结论",
+  "mtime_authoritative": true
+ },
+ "gate_semantics": "E17 L0 逐位：score_raw = a − w·log1p(deg_vis)，w∈W_GRID 在验证日经「逐日 joint-rank 后 AP」选择；AUC 亦为逐日 ranknorm 后池化（与 E17 score_eval/eval_arms 同构）",
+ "hypothesis": "检测语义盲区中学习分数池化 AUC≈0.51 与度门控融合的 0.92 瓶颈-窗口效应可由攻击者度偏好 α 解释；度门控评分在避枢纽攻击者下显著优于纯学习评分。",
+ "independent_vars": {
+  "attacker_strategy": [
+   "S_a1.5",
+   "S_a1.0",
+   "S_a0.75",
+   "S_a0.5",
+   "S_a0.25",
+   "A0_uniform",
+   "S_am0.5",
+   "A1_avoid_b1",
+   "A2_avoid_b2",
+   "A3_br_learn",
+   "A4_br_gate"
+  ],
+  "defender_scorer": [
+   "learn",
+   "degfall",
+   "gate",
+   "pool"
+  ],
+  "backbone_seed": [
+   0,
+   1,
+   2
+  ],
+  "conv": [
+   "asimpl",
+   "strict"
+  ],
+  "draws": 5
+ },
+ "dependent_vars": [
+  "日块化池化检测 AUC（跨界层，主口径 asimpl）",
+  "植入边可见端度分位中位数",
+  "验证日选择的 w/σ/λ",
+  "低度桶内学习 AUC"
+ ],
+ "controls": {
+  "backbone": "E11 blind0 协议逐位复用（r2_e11_lanl_blind.train_arm；onset=0 全遮掩 S）",
+  "negatives": "当日真实跨界边中非红队事件者（红队边剔除）",
+  "positives": "植入边（每日 m=50，11 评估日共 550/策略/draw）",
+  "params_selection": "w/σ/λ 仅在验证日（1,2,5,6,7,8,9）同策略植入正例 vs 当日非红队跨界负例上选（E17/E11 同构）",
+  "leakage": "植入边不进模型输入；骨干对植入无感知；负例剔除红队边",
+  "fairness": "gate 的 w 网格与 E17 一致（W_GRID）；degfall/pool 的 σ/λ 选择协议与 E11 一致"
+ },
+ "success_criteria_frozen": {
+  "C1_signature_dose_response": "Spearman(α∈9点 family, 植入边可见端度分位中位数) ≤ −0.9（draw 均值）",
+  "C2_learn_collapse": "AUC_learn(A0_uniform) − AUC_learn(A2_avoid_b2) ≥ 0.05 且日块配对 bootstrap 95% CI 下界>0，3/3 seed",
+  "C3_method_claim": "AUC_gate − AUC_learn ≥ 0.05 于 A1_avoid_b1 与 A2_avoid_b2，日块配对 bootstrap 95% CI 下界>0，3/3 seed（asimpl 主口径）",
+  "C4_br_robustness_report": "A3/A4 下 AUC_gate − AUC_learn 报告型（CI 下界>0 可立「白盒 BR 下稳健」主张）",
+  "C5_sigma_sign_report": "预测 σ*(A1_avoid_b1/A2_avoid_b2)=−1；真实数据 E11 σ*=−1 同向（报告型）",
+  "C6_alpha_calibration_report": "α*=|AUC_learn(α)−0.5019| 最小者；报 medpct(α*) vs 0.4854、gate AUC(α*)、learn AUC(α*) 三元组（consistent-with 语义）",
+  "C7_blendin_report": "α=+1.0：degfall AUC≈0.5（度信号消失）之预期检验；gate w 选择退化行为报告"
+ },
+ "failure_branches_frozen": {
+  "C3_fail": "如实记录「度门控在合成攻击者床无增量」，方法主张不得引用本实验正证据",
+  "C2_fail": "如实记录「学习崩塌非避枢纽策略所致」，机制解释降级"
+ },
+ "real_data_targets": {
+  "learn_auc_blind0_asimpl_cross": 0.5019,
+  "degfall_det_auc_rank_semantics": 0.5145,
+  "gate_sweetspot_bed_compare": "E17 L0_fixed0.05 三 seed 0.9205/0.9518/0.9572（均值 0.9432）",
+  "attack_deg_pct_median": 0.4854,
+  "source": "本执行人 E24 核验轮自 E11 npz 复算（results/r3/e24_artifact_verification/verification.json + 本文件 amendment_prerun.reason）"
+ },
+ "interpretation_limits": [
+  "本床=受控攻击者模型（构造性），不主张真实攻击者身份；σ 与 0.51 现象解释为 consistent-with",
+  "植入密度 m=50/日 远高于真实红队（~4.5/日），为受控对照而非体量模拟",
+  "A3/A4 为白盒 best-response（攻击者知评分器，且 A4 用公开 w=0.05），真实攻击者未必知；白盒=悲观上界语义",
+  "负例=真实跨界非红队边；植入边可为新增非边或既有边",
+  "α* 标定给出的是「等效度偏好」，非真实攻击者策略辨识"
+ ],
+ "artifacts": [
+  "results/r3/e25_attack_bed/{criteria_frozen.json, results_e25.jsonl, analysis_e25.json, scores_e25_seed*.npz, ranks_e25_*.npz, DONE.sentinel}"
+ ]
+}

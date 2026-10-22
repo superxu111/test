@@ -1,0 +1,37 @@
+{
+ "experiment": "E33",
+ "title": "A4′ 信息集对称自适应白盒审计（免训臂）：攻击者与防御者在同一验证日/同一候选池上各自重选权重并对最终实现自适应",
+ "frozen_at": "以本文件 mtime 为准（mtime-authoritative；本文件自写入后不得再修改；跑数脚本打印本文件 mtime 与产物 mtime 的先后关系）",
+ "status": "冻结于任何 E33 产物之前",
+ "trigger": "双审 A-M1（A4 攻击者按未部署的 W_BR=0.05 选边、防御方评估用验证日重选 w=0.5，「白盒悲观上界」不成立）+ Tramèr 2020 自适应攻击纪律（arXiv:2002.08347 T0-T4）；定向创新方案二 §1",
+ "defect_confirmed_by_this_executor": "results_e25.jsonl 的 A4_br_gate 全部 15 格（asimpl）防御方 gate_w 实测=0.5（strict=0.2），而攻击者优化目标硬编码 W_BR=0.05（scripts/r3_e25_attack_bed.py:47,96-100）→ 信息集失配成立",
+ "independent_vars": {
+  "attacker_targets": [
+   "learn（Tramèr T3「攻最弱组件」）",
+   "gate(w) for w ∈ W_GRID={0,0.01,0.02,0.05,0.1,0.2,0.5}（含 A4 原参数 0.05 与部署侧实测 0.5）",
+   "CAS_proxy（针对最终条件化实现；攻击者侧代理=候选池内同构 CAS）"
+  ],
+  "attacker_objective": "与 E25 A4 逐位同构：在候选池 5000 子采样上取 obj=ranknorm(a_cand)−w_att·log1p(deg_cand) 最小的 50 条（CAS_proxy 目标：obj=候选池内 CAS 分最小的 50 条）",
+  "defender_response": "与 E25 逐位同构的验证日参数选择（w/σ/λ 于验证日 1,2,5,6,7,8,9 上按日 joint-rank 后 AP 选择），作用于同一攻击者的验证日植入",
+  "info_symmetry": "攻击者与防御者使用同一验证日集合、同一候选池；攻击者不得使用「未部署参数」构造悲观上界（A-M1 的失配在 A4′ 中消除）"
+ },
+ "success_criteria_frozen": {
+  "J1_mismatch_quantified": "报告型主判据：逐攻击目标报告防御方实测 gate 的池化 AUC/标准化 AUC/F，取最小者=A4′ 自适应审计值；与失配 A4 的 15 格均值（池化 0.9516 / degfall 0.9575）并列。方向性注册：A4′(target=gate(0.5)) 的 gate AUC < 失配 A4 的 gate AUC（同一日块配对 bootstrap 95% CI 单侧），即「失配方向对防御方有利」",
+  "J2_representation_fairness": "A4′ 每个目标下均报 gate − degfall 与 gate − oracle 符号最强平凡基线（池化/标准化/F 三口径），回应 B-M8「学习分量贡献≈0」",
+  "J3_CAS_under_adaptive": "报告型：A4′(target=CAS_proxy) 下 CAS 与 gate 的 F 与标准化 AUC；判断条件化模块在自适应攻击者下是否仍保 F(CAS) ≥ F(gate)（3/3 seed）",
+  "J4_deployed_w_mismatch_table": "报告型：攻击目标权重 w_att × 防御方验证日实测 w（mode/逐格）交叉表——量化「攻击者按哪个参数打、防御方实际部署哪个参数」的自适应失配结构"
+ },
+ "failure_branches_frozen": {
+  "J1_direction_fail": "如实记录「信息集对称化未降低防御方读数」→ A-M1 的失配指控在 E25 数字上不产生方向性影响，写作期只作披露不作结论",
+  "J3_fail": "条件化模块在自适应攻击者下不保 F 序 → CAS 主张限定于非自适应放置类攻击者（E25 α 家族），写作期必须并列"
+ },
+ "interpretation_limits": [
+  "A4′ 为单轮最佳响应（非博弈均衡求解）；攻击者用候选池代理目标（CAS_proxy 非精确最终实现），代理差距如实声明",
+  "免训：全部复用 scores_e25_seed*.npz 的候选池与真实边分，零模型推理",
+  "攻击者只重选「目标权重」，不重选「采样机制类」（仍为候选池最低分选边）；这一动作集声明沿用 E25 的 A3/A4 语义",
+  "「自适应」不等于「最优」：报告的是声明动作集内的最坏情形"
+ ],
+ "artifacts": [
+  "results/r3/e33_a4prime_adaptive/{criteria_frozen.json, analysis_e33.json, results_e33.jsonl, DONE.sentinel}"
+ ]
+}
